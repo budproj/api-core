@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Htmx -->
+  <script src="https://unpkg.com/htmx.org@2.0.0"
+    integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw"
+    crossorigin="anonymous"></script>
+  <style>
+    button:disabled {
+      display: none;
+    }
+
+    .htmx-indicator:not(.htmx-request) {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="relative w-full h-full">
+    <div class="flex items-center">
+      <h3 class="font-bold mr-2 font-bold text-gray-500 text-sm uppercase">
+        EVOLUÇÃO DO RESULTADO CHAVE
+      </h3>
+      <span class="px-2 py-1 text-sm font-semibold text-white bg-black rounded">
+        beta
+      </span>
+    </div>
+    <div class="relative flex h-10 w-full">
+      <button class="flex-1 border border-pink-500 rounded-md text-pink-500 hover:bg-pink-500 hover:text-white"
+        hx-get="summary/{{ opts.summary }}" hx-trigger="click" hx-swap="outerHTML" hx-disabled-elt="this"
+        hx-indicator="#wand">
+        Entenda melhor este resultado-chave
+      </button>
+      <div id="wand" class="flex-1 h-full flex flex-col justify-center">
+        <img src=" {{ url_for('llm.static', filename='images/wand_big.gif' ) }}" alt="This is a wand icon" />
+        <p class="mt-2 text-gray-500">Escolhendo o melhor baralho para mágica</p>
+      </div>
+    </div>
+  </div>
+</body>

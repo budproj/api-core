@@ -1,0 +1,18 @@
+[project]
+name = "api"
+version = "1.0.0"
+description = "Bud web project."
+readme = "README.md"
+dependencies = [
+    "flask",
+    "Flask-SQLAlchemy",
+    "psycopg2",
+    "flask-openai"
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
