@@ -5,8 +5,8 @@ from api.models.db.key_result import KeyResult
 class LlmSummary:
     summary: str
 
-    MESSAGE_SYSTEM = 'Você é uma máquina que ajuda a pessoa a entender o conceito de objetivos e resultados-chave'
-    MESSAGE_USER = 'Me ajude a entender melhor esse resultado-chave: %s'
+    MESSAGE_SYSTEM = 'Você é uma máquina que ajuda a pessoa a entender o conceito de algum objetivos e resultados-chave na forma de uma descrição.'
+    MESSAGE_USER = 'Explique esse resultado-chave: {}'
 
     ERROR_SUMMARY = 'Houve um erro ao gerar o texto, tente novamente mais tarde.'
 

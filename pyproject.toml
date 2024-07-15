@@ -1,18 +1,21 @@
-[project]
-name = "api"
-version = "1.0.0"
-description = "Bud web project."
+[tool.poetry]
+name = "api-core"
+version = "0.1.0"
+description = "Bud main api application"
+authors = ["Rodrigo Seiji Piubeli Hirao <rodrigo.seiji.hirao@gmail.com>"]
 readme = "README.md"
-dependencies = [
-    "flask",
-    "Flask-SQLAlchemy",
-    "psycopg2",
-    "flask-openai"
-]
+package-mode = false
 
-[project.optional-dependencies]
-test = ["pytest"]
+[tool.poetry.dependencies]
+python = "^3.12"
+Flask = "^3.0.3"
+flask-sqlalchemy = "^3.1.1"
+psycopg2 = "^2.9.9"
+flask-openai = "^0.5.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.2"
 
 [build-system]
-requires = ["flit_core<4"]
-build-backend = "flit_core.buildapi"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
