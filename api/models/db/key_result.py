@@ -38,8 +38,12 @@ class KeyResult(Base):
     owner_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey('user.id'), nullable=False)
 
-    objective = relationship('Objective', back_populates='key_results')
-    user = relationship('User', back_populates='key_results')
+    objective = relationship('Objective',
+                             innerjoin=True,
+                             back_populates='key_results')
+    user = relationship('User',
+                        back_populates='key_results',
+                        innerjoin=True)
     key_result_check_ins = relationship(
         'KeyResultCheckIn', back_populates='key_result')
     key_result_check_marks = relationship(
