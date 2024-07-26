@@ -4,6 +4,7 @@ from flask import Flask
 from importlib import import_module
 from flask_sqlalchemy import SQLAlchemy
 from flask_openai import OpenAI
+
 from api.config import Config
 from api.models.db.cycle import Cycle
 from api.models.db.key_result_check_mark import KeyResultCheckMark
@@ -13,8 +14,36 @@ from api.models.db.user import User
 from api.models.db.key_result import KeyResult
 from api.models.db.objective import Objective
 
+from authlib.integrations.flask_client import OAuth
+from authlib.integrations.flask_oauth2 import ResourceProtector
+
+from api.config import Config
+from api.utils.auth.validator import Auth0JWTBearerTokenValidator
+
 core_db = SQLAlchemy()
 core_openai = OpenAI()
+oauth = OAuth()
+require_auth = ResourceProtector()
+
+
+def create_auth(config: Config):
+    validator = Auth0JWTBearerTokenValidator(
+        config.AUTH0_DOMAIN,
+        config.AUTH0_AUDIENCE
+    )
+    require_auth.register_token_validator(validator)
+
+    oauth.register(
+        "auth0",
+        client_id=config.AUTH0_CLIENT_ID,
+        client_secret=config.AUTH0_CLIENT_SECRET,
+        client_kwargs={
+            "scope": "openid profile email",
+        },
+        server_metadata_url=f'https://{
+            config.AUTH0_DOMAIN}/.well-known/openid-configuration'
+    )
+
 
 dictConfig({
     'version': 1,
@@ -40,10 +69,19 @@ def create_app(config=Config()):
     logging.getLogger('sqlalchemy.orm').setLevel(logging.INFO)
 
     app = Flask(__name__)
-    app.config.from_object(config)
-    core_db.init_app(app)
-    core_openai.init_app(app)
-    for module_name in ('llm',):
+
+
+<< << << < HEAD
+== == == =
+config = Config()
+>>>>>> > 46711a0(Feat:  validation)
+app.config.from_object(config)
+core_db.init_app(app)
+core_openai.init_app(app)
+ oauth.init_app(app)
+  create_auth(config)
+
+   for module_name in ('llm',):
         module = import_module(
             'api.services.{}.routes'.format(module_name))
         app.register_blueprint(module.blueprint)
