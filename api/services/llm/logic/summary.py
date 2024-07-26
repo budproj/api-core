@@ -4,6 +4,11 @@ from sqlalchemy.orm import joinedload
 
 
 class LlmSummary:
+    """LLM Summary object
+    
+    Attributes:
+      summary: chatgpt response to okr summary request
+    """
     summary: str
 
     MESSAGE_BEHAVIOUR = '''
@@ -47,6 +52,65 @@ class LlmSummary:
     ERROR_SUMMARY = 'Houve um erro ao gerar o texto, tente novamente mais tarde.'
 
     def __init__(self, okr_id):
+        """Initializes local {summary}
+        
+        Args:
+          okr_id: okr uuid to get summary from
+        """
+        summary = self._get_summary(okr_id)
+        if summary is None:
+            self.summary = self.ERROR_SUMMARY
+        else:
+            self.summary = summary
+
+    def _get_summary(self, okr_id: str) -> str | None:
+        """Gets summary from chatgpt
+
+        Args: 
+          okr_id: okr to send to chatgpt
+
+        Returns:
+          chatgpt summary response
+        """
+        messageString = self.MESSAGE_BEHAVIOUR + \
+            self.MESSAGE_MISSION + self.MESSAGE_MAPPING
+
+        completion = core_openai.client.chat.completions.create(
+            model='gpt-3.5-turbo',
+            messages=[
+                {
+                    'role': 'system',
+                    'content': messageString
+                },
+                {
+                    'role': 'user',
+                    'content': self.MESSAGE_USER.format(self._okr_prompt(okr_id))
+                },
+            ]
+        )
+        return completion.choices[0].message.content
+        
+
+    def _okr_prompt(self, okr_id: str):
+        """Gets okr prompt to insert on {self.ERROR_SUMMARY}
+
+        Args:
+          okr_id: okr to search on database
+
+        Returns:
+          Prompt string in the following format
+
+          <Prompt>
+            <KeyResult> {okr.title} </KeyResult>
+            <Description>{okr.description if okr.description is not None else ''}</Description>
+            <Objective> {okr.objective.title} </Objective> 
+            <Owner> {okr.user.first_name} {okr.user.last_name} </Owner> 
+            <Goal> {okr.goal} </Goal> 
+            <Deadline> {okr.objective.cycle.date_end} </Deadline>
+            <Progress> {formatted_check_ins_string} </Progress>
+            <Task> {formatted_check_marks_string} </Task>
+          </Prompt>
+        """
         okr: KeyResult = core_db.session.query(
             KeyResult).filter_by(id=okr_id).first()
 
@@ -73,10 +137,7 @@ class LlmSummary:
         formatted_check_marks_string = "\n".join(formatted_check_marks)
         formatted_comments_string = "\n".join(formatted_comments)
 
-        messageString = self.MESSAGE_BEHAVIOUR + \
-            self.MESSAGE_MISSION + self.MESSAGE_MAPPING
-
-        okrString = f''' 
+        return f''' 
             <Prompt>
                 <KeyResult> {okr.title} </KeyResult>
                 <Description>{okr.description if okr.description is not None else ''}</Description>
@@ -90,21 +151,3 @@ class LlmSummary:
             </Prompt>
         '''
 
-        completion = core_openai.client.chat.completions.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                {
-                    'role': 'system',
-                    'content': messageString
-                },
-                {
-                    'role': 'user',
-                    'content': self.MESSAGE_USER.format(okrString)
-                },
-            ]
-        )
-        summary = completion.choices[0].message.content
-        if summary is None:
-            self.summary = self.ERROR_SUMMARY
-        else:
-            self.summary = summary
