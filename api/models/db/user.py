@@ -1,22 +1,29 @@
-import uuid
-from sqlalchemy import ForeignKey
+from typing import TYPE_CHECKING, List
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import relationship
 
-
-from .base import Base
+from api.models.db.base import Base
+if TYPE_CHECKING:
+    from api.models.db.key_result import KeyResult
+    from api.models.db.objective import Objective
+from api.models.db.key_result_check_in import KeyResultCheckIn
+from api.models.db.key_result_check_mark import KeyResultCheckMark
+from api.models.db.key_result_comment import KeyResultComment
 
 
 class User(Base):
     __tablename__ = 'user'
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, nullable=False)
-    first_name: Mapped[str] = mapped_column(nullable=False)
-    last_name: Mapped[str] = mapped_column(nullable=False)
+    id: Mapped[str] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column()
+    last_name: Mapped[str] = mapped_column()
 
-    key_results = relationship('KeyResult', back_populates='user')
-    key_result_check_ins = relationship(
-        'KeyResultCheckIn', back_populates='user')
-    key_result_check_marks = relationship(
-        'KeyResultCheckMark', back_populates='assigned_user')
-    key_result_comments = relationship(
-        'KeyResultComment', back_populates='user')
+    objectives: Mapped[List['Objective']] = relationship(
+        back_populates='owner')
+    key_results: Mapped[List['KeyResult']
+                        ] = relationship(back_populates='owner')
+    key_result_check_ins: Mapped[List['KeyResultCheckIn']] = relationship(
+        back_populates='user')
+    key_result_check_marks: Mapped[List['KeyResultCheckMark']] = relationship(
+        back_populates='assigned_user')
+    key_result_comments: Mapped[List['KeyResultComment']] = relationship(
+        back_populates='user')

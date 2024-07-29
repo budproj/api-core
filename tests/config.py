@@ -1,7 +1,8 @@
 import os
+from api.config import Config
 
 
-class Config(object):
+class TestConfig(Config):
 
     basedir = os.path.abspath(os.path.dirname(__file__))
 
