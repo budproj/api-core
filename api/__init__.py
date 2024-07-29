@@ -6,8 +6,6 @@ from importlib import import_module
 from flask_sqlalchemy import SQLAlchemy
 from flask_openai import OpenAI
 
-from api.config import Config
-
 core_db = SQLAlchemy()
 core_openai = OpenAI()
 
@@ -35,7 +33,7 @@ def create_app():
     logging.getLogger('sqlalchemy.orm').setLevel(logging.INFO)
 
     app = Flask(__name__)
-    app.config.from_object(Config())
+    app.config.from_object(config)
     core_db.init_app(app)
     core_openai.init_app(app)
     for module_name in ('llm',):

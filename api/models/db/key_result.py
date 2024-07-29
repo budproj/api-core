@@ -18,7 +18,7 @@ from .base import Base
 
 class KeyResult(Base):
     __tablename__ = 'key_result'
-    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, nullable=False)
+    id: Mapped[str] = mapped_column(primary_key=True, nullable=False)
     title: Mapped[str] = mapped_column(nullable=False)
     description: Mapped[str]
     goal: Mapped[float] = mapped_column(nullable=False)
