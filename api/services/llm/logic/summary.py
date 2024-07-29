@@ -2,6 +2,9 @@ from sqlalchemy.orm import joinedload
 from api import core_db, core_openai
 from api.models.db.key_result import KeyResult
 from api.models.db.objective import Objective
+from api.models.db.key_result_check_in import KeyResultCheckIn
+from api.models.db.key_result_check_mark import KeyResultCheckMark
+from api.models.db.key_result_comment import KeyResultComment
 
 
 class LlmSummary:
@@ -37,7 +40,7 @@ class LlmSummary:
     '''
 
     MESSAGE_MAPPING = '''
-      Você deve considerar, apenas as informações condidas dentro do objeto, ou seja, { e }
+      Você deve considerar, apenas as informações condidas dentro do objeto, ou seja,
       Cada propriedade é o valor de uma chave do objeto
     '''
 
@@ -56,7 +59,7 @@ class LlmSummary:
         else:
             self.summary = summary
 
-    def _get_summary(self, okr_id: str) -> str | None:
+    def _get_summary(self, okr_id: str) -> str:
         """Gets summary from chatgpt
 
         Args:
@@ -69,7 +72,6 @@ class LlmSummary:
             self.MESSAGE_MISSION + self.MESSAGE_MAPPING
 
         message_user = self._okr_prompt(okr_id)
-        print(message_user)
 
         completion = core_openai.client.chat.completions.create(
             model='gpt-3.5-turbo',
@@ -105,7 +107,13 @@ class LlmSummary:
             joinedload(KeyResult.key_result_check_ins),
             joinedload(KeyResult.key_result_check_marks),
             joinedload(KeyResult.key_result_comments),
-            joinedload(KeyResult.user)
+            joinedload(KeyResult.user),
+            joinedload(KeyResult.key_result_check_ins).joinedload(
+                KeyResultCheckIn.user),
+            joinedload(KeyResult.key_result_check_marks).joinedload(
+                KeyResultCheckMark.assigned_user),
+            joinedload(KeyResult.key_result_comments).joinedload(
+                KeyResultComment.user),
         ).first()
 
         if okr is None:
@@ -128,8 +136,7 @@ class LlmSummary:
         sorted_comments = sorted(
             okr.key_result_comments, key=lambda x: x.created_at, reverse=True)
         formatted_comments = [
-            f'{comments.user.first_name} em {
-                comments.created_at}: "{comments.text}"'
+            f'{comments.user.first_name} em {comments.created_at}: "{comments.text}"'
             for comments in sorted_comments
         ]
 
