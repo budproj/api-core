@@ -7,6 +7,9 @@
   <script src="https://unpkg.com/htmx.org@2.0.0"
     integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw"
     crossorigin="anonymous"></script>
+</head>
+
+<body>
   <style>
     button:disabled {
       display: none;
@@ -16,9 +19,6 @@
       display: none;
     }
   </style>
-</head>
-
-<body>
   <div class="relative w-full h-full">
     <div class="flex items-center mb-1">
       <h3 class="font-bold mr-2 font-bold text-gray-500 text-sm uppercase">
@@ -30,7 +30,7 @@
     </div>
     <div class="relative flex h-10 w-full">
       <button class="flex-1 border border-pink-500 rounded-md text-pink-500 hover:bg-pink-500 hover:text-white"
-        hx-get="summary/{{ opts.okr_id }}" hx-trigger="click" hx-swap="outerHTML" hx-disabled-elt="this"
+        hx-get="/core/llm/summary/{{ opts.okr_id }}" hx-trigger="click" hx-swap="outerHTML" hx-disabled-elt="this"
         hx-indicator="#wand">
         Entenda melhor este resultado-chave
       </button>
