@@ -1,10 +1,12 @@
+from typing import Optional
 from sqlalchemy.orm import joinedload
-from api import core_db, core_openai
+from api import core_db
 from api.models.db.key_result import KeyResult
 from api.models.db.objective import Objective
 from api.models.db.key_result_check_in import KeyResultCheckIn
 from api.models.db.key_result_check_mark import KeyResultCheckMark
 from api.models.db.key_result_comment import KeyResultComment
+from api.utils.openai import OpenAI
 
 
 class LlmSummary:
@@ -47,19 +49,19 @@ class LlmSummary:
     MESSAGE_USER = 'Explique esse resultado-chave: {}'
     ERROR_SUMMARY = 'Houve um erro ao gerar o texto, tente novamente mais tarde.'
 
-    def __init__(self, okr_id):
+    def __init__(self, openai: OpenAI, okr_id: str):
         """Initializes local {summary}
 
         Args:
           okr_id: okr uuid to get summary from
         """
-        summary = self._get_summary(okr_id)
+        summary = self._get_summary(openai, okr_id)
         if summary is None:
             self.summary = self.ERROR_SUMMARY
         else:
             self.summary = summary
 
-    def _get_summary(self, okr_id: str) -> str:
+    def _get_summary(self, openai: OpenAI, okr_id: str) -> Optional[str]:
         """Gets summary from chatgpt
 
         Args:
@@ -73,20 +75,12 @@ class LlmSummary:
 
         message_user = self._okr_prompt(okr_id)
 
-        completion = core_openai.client.chat.completions.create(
-            model='gpt-3.5-turbo',
-            messages=[
-                {
-                    'role': 'system',
-                    'content': message_system
-                },
-                {
-                    'role': 'user',
-                    'content': self.MESSAGE_USER.format(message_user)
-                },
-            ]
-        )
-        return completion.choices[0].message.content
+        try:
+            return openai.get_completion(
+                message_system, self.MESSAGE_USER.format(message_user))
+        except Exception as e:
+            print(e)
+            return None
 
     def _okr_prompt(self, okr_id: str):
         """Gets okr prompt to insert on {self.ERROR_SUMMARY}
@@ -107,7 +101,7 @@ class LlmSummary:
             joinedload(KeyResult.key_result_check_ins),
             joinedload(KeyResult.key_result_check_marks),
             joinedload(KeyResult.key_result_comments),
-            joinedload(KeyResult.user),
+            joinedload(KeyResult.owner),
             joinedload(KeyResult.key_result_check_ins).joinedload(
                 KeyResultCheckIn.user),
             joinedload(KeyResult.key_result_check_marks).joinedload(
@@ -136,7 +130,8 @@ class LlmSummary:
         sorted_comments = sorted(
             okr.key_result_comments, key=lambda x: x.created_at, reverse=True)
         formatted_comments = [
-            f'{comments.user.first_name} em {comments.created_at}: "{comments.text}"'
+            f'{comments.user.first_name} em {
+                comments.created_at}: "{comments.text}"'
             for comments in sorted_comments
         ]
 
@@ -144,7 +139,7 @@ class LlmSummary:
             'key-result-title': okr.title,
             'key-result-description': okr.description,
             'key-result-objective-title': okr.objective.title,
-            'key-result-owner': f'{okr.user.first_name} {okr.user.last_name}',
+            'key-result-owner': f'{okr.owner.first_name} {okr.owner.last_name}',
             'key-result-goal': okr.goal,
             'key-result-deadline': okr.objective.cycle.date_end,
             'key-result-progress': formatted_check_ins,

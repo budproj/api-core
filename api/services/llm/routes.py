@@ -1,5 +1,6 @@
 from api.services.llm.logic.index import LlmIndex
 from api.services.llm.logic.summary import LlmSummary
+from api.utils.openai import OpenAI
 from . import blueprint
 from flask import render_template
 
@@ -11,4 +12,4 @@ def index(okr_id: str):
 
 @blueprint.route('/summary/<okr_id>')
 def summary(okr_id: str):
-    return render_template('summary.html', opts=LlmSummary(okr_id))
+    return render_template('summary.html', opts=LlmSummary(OpenAI(), okr_id))
