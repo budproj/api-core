@@ -23,3 +23,11 @@ class KeyResultComment(Base):
         ForeignKey('key_result.id'))
     key_result: Mapped['KeyResult'] = relationship(
         back_populates='key_result_comments')
+
+    @property
+    def team_id(self):
+        return self.key_result.team_id
+
+    @property
+    def team(self):
+        return self.key_result.team

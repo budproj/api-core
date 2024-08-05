@@ -2,6 +2,8 @@ import os
 
 
 class Config(object):
+    SECRET_KEY = os.environ['SECRET_KEY']
+    SESSION_TYPE = 'cachelib'
 
     basedir = os.path.abspath(os.path.dirname(__file__))
 
