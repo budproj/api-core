@@ -1,0 +1,67 @@
+{% for item in opts.teams %}
+<hr class="border-gray-400 my-2">
+<div class=" space-x-5 flex items-center">
+  <div
+    class="flex items-center justify-center w-10 h-10 bg-white border-2 border-new-gray-200 rounded-full flex-shrink-0 flex-grow-0">
+    <p class="text-2xl font-bold leading-[0.8] text-[#6F6EFF]">
+      {{ loop.index }}
+    </p>
+  </div>
+  <div class="w-full">
+    <div class="mb-2 flex justify-between items-center">
+      <p class="text-[16px] font-[450] leading-normal text-[#121415] font-circular-std">
+        {{ item.team_name }}
+      </p>
+      <p class="text-[16px] font-bold leading-normal text-right text-[#6F6EFF] font-circular-std">
+        {{ (item.progress|round)|int }}%
+      </p>
+    </div>
+    <div class="flex w-full h-2 bg-[#D9E2F6] rounded-full overflow-hidden" role="progressbar" aria-valuenow="25"
+      aria-valuemin="0" aria-valuemax="100">
+      <div
+        class="progress-bar flex flex-col justify-center rounded-full overflow-hidden bg-[#6F6EFF] text-xs text-white text-center whitespace-nowrap transition duration-500"
+        style="width: {{item.progress}}%">
+      </div>
+    </div>
+    <p class="text-[12px] font-normal leading-normal tracking-[0.12px] font-circular-std mt-1 
+      {{ 'is-outdated-true' if item.is_outdated else 'is-outdated-false' }}">
+      Último check-in {{item.latest_check_in_created_at}} por {{item.user_first_name}} {{item.user_last_name}}
+    </p>
+  </div>
+  {% set progress_diff = (item.progress - item.previous_progress)|round|int %}
+
+  {% if progress_diff > 0 %}
+  <div class="rounded-[6px] border-[2.362px] border-white bg-[#EAFAF4] flex p-1 items-center space-x-1">
+    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="8" viewBox="0 0 11 8" fill="none">
+      <path
+        d="M4.03135 0.711896C4.65706 -0.111359 5.89756 -0.104002 6.51267 0.726614L9.96457 5.38786C10.7251 6.41487 9.98622 7.86992 8.708 7.86233L1.74469 7.82103C0.466468 7.81344 -0.253714 6.34974 0.519945 5.33184L4.03135 0.711896Z"
+        fill="#24CB8D" />
+    </svg>
+    <p class="text-[12px] font-medium leading-normal text-[#24CB8D] font-circular-std">
+      +{{ progress_diff }}%
+    </p>
+  </div>
+  {% elif progress_diff < 0 %} <div
+    class="rounded-[6px] border-[2.362px] border-white bg-[#FFF0F1] flex p-1 items-center space-x-1">
+    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="9" viewBox="0 0 11 9" fill="none">
+      <path
+        d="M6.4857 8.05677C5.86506 8.88372 4.62455 8.88372 4.00433 8.05677L0.523799 3.41609C-0.24306 2.39361 0.486861 0.934207 1.76511 0.934207L8.72854 0.934208C10.0068 0.934208 10.736 2.39361 9.96859 3.41608L6.4857 8.05677Z"
+        fill="#FF616A" />
+    </svg>
+    <p class="text-[12px] font-medium leading-normal text-[#FF616A] font-circular-std">
+      -{{ progress_diff }}%
+    </p>
+</div>
+{% else %}
+<div class="rounded-[6px] border-[2.362px] border-white bg-[#EEF2FC] flex p-1 items-center space-x-1">
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="6.84375" cy="6.54248" r="5.40956" fill="#A2B3CE" stroke="#A2B3CE" stroke-width="1.18087" />
+    <rect x="3.5" y="5.94238" width="6.3166" height="1.40625" rx="0.703125" fill="white" />
+  </svg>
+  <p class="text-[12px] font-medium leading-normal text-[#A2B3CE] font-circular-std">
+    {{ progress_diff }}%
+  </p>
+</div>
+{% endif %}
+</div>
+{% endfor %}
