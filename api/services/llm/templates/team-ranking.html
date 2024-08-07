@@ -102,45 +102,65 @@
     .is-outdated-false {
       color: #99A4C2;
     }
+
+    .htmx-indicator {
+      display: none;
+    }
+
+    .htmx-request .htmx-indicator {
+      display: block;
+    }
+
+    .htmx-request.htmx-indicator {
+      display: block;
+    }
+
+    #team-ranking[disabled] {
+      display: none;
+    }
   </style>
-  <div>
-    <div class="relative w-full h-full bg-new-gray50">
-      <p class="text-new-gray800 font-medium text-lg mb-3">
-        Visão geral dos times
-      </p>
-      <div class="relative w-full h-full bg-white rounded-lg shadow-for-background-light px-8 py-5">
-        <div class="flex">
-          <div>
-            <p class="text-[18px] font-medium leading-normal tracking-[0.18px] text-[#364059] font-circular-std">
-              Ranking de times
-            </p>
-            <p class="text-[14px] font-[450] leading-normal tracking-[0.14px] text-[#8491B0] font-circular-std">
-              Progresso geral dos objetivos no ciclo atual
-            </p>
-          </div>
-          <select class="px-2 w-[100px] h-[36px] flex-shrink-0 rounded-[4px] border-2 border-[#D9E2F6] 
+  <div class="relative w-full h-full bg-new-gray50">
+    <p class="text-new-gray800 font-medium text-lg mb-3">
+      Visão geral dos times
+    </p>
+    <div class="relative w-full h-full bg-white rounded-lg shadow-for-background-light px-8 py-5">
+      <div class="flex">
+        <div>
+          <p class="text-[18px] font-medium leading-normal tracking-[0.18px] text-[#364059] font-circular-std">
+            Ranking de times
+          </p>
+          <p class="text-[14px] font-[450] leading-normal tracking-[0.14px] text-[#8491B0] font-circular-std">
+            Progresso geral dos objetivos no ciclo atual
+          </p>
+        </div>
+        <select class="px-2 w-[100px] h-[36px] flex-shrink-0 rounded-[4px] border-2 border-[#D9E2F6] 
           bg-white block ml-auto border-gray-200 rounded-lg text-sm outline-none
           focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-            hx-get="/core/llm/team-ranking/{{ opts.team_id }}/children" hx-params="*" id="cycle_id" name="cycle_id"
-            hx-target="#team-ranking" hx-swap="innerHTML">
-            {% for cycle in opts.cycles %}
-            <option value="{{ cycle.id }}" selected="{{cycle.id==opts.cycle_id}}">{{ cycle.period }}</option>
-            {% endfor %}
-          </select>
+          hx-get="/core/llm/team-ranking/{{ opts.team_id }}/children" hx-params="*" name="cycle_id"
+          hx-target="#team-ranking" hx-swap="innerHTML" hx-indicator="#ranking-skeleton"
+          hx-disabled-elt="#team-ranking">
+          {% for cycle in opts.cycles %}
+          <option value="{{ cycle.id }}" selected="{{cycle.id==opts.cycle_id}}">{{ cycle.period }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div id="team-ranking">
+        {% include 'team-ranking-content.html' %}
+      </div>
+      <div id="ranking-skeleton" class="flex animate-pulse htmx-indicator">
+        <div class="shrink-0 flex items-center space-x-3 mb-5">
+          <span class="size-12 block bg-gray-200 rounded-full"></span>
+          <p class="h-4 bg-gray-200 rounded-full w-full"></p>
         </div>
-        <div id="team-ranking">
-          {% include 'team-ranking-content.html' %}
+        <div class="shrink-0 flex items-center space-x-3 mb-5">
+          <span class="size-12 block bg-gray-200 rounded-full"></span>
+          <p class="h-4 bg-gray-200 rounded-full w-full"></p>
+        </div>
+        <div class="shrink-0 flex items-center space-x-3 mb-5">
+          <span class="size-12 block bg-gray-200 rounded-full"></span>
+          <p class="h-4 bg-gray-200 rounded-full w-full"></p>
         </div>
       </div>
     </div>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        var progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(function (bar) {
-          var progress = bar.getAttribute('data-progress');
-          bar.style.width = progress + '%';
-        });
-      });
-    </script>
+  </div>
 </body>
