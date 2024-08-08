@@ -3,6 +3,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.orm import relationship
 from typing import TYPE_CHECKING, Optional, List
 
+from api.models.db.associations.association_team_user import association_team_user
+from api.models.db.views.team_company import association_team_company
 from api.models.db.base import Base
 if TYPE_CHECKING:
     from api.models.db.key_result import KeyResult
@@ -30,3 +32,12 @@ class Team(Base):
     objectives: Mapped[List['Objective']] = relationship(back_populates='team')
     key_results: Mapped[List['KeyResult']
                         ] = relationship(back_populates='team')
+
+    users: Mapped[List['User']] = relationship(
+        secondary=association_team_user, back_populates='teams')
+
+    company: Mapped['Team'] = relationship(
+        secondary=association_team_company,
+        primaryjoin=id == association_team_company.c.team_id,
+        secondaryjoin=id == association_team_company.c.company_id,
+    )

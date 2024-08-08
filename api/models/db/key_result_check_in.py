@@ -22,3 +22,11 @@ class KeyResultCheckIn(Base):
     key_result_id: Mapped[str] = mapped_column(ForeignKey('key_result.id'))
     key_result: Mapped['KeyResult'] = relationship(
         back_populates='key_result_check_ins')
+
+    @property
+    def team_id(self):
+        return self.key_result.team_id
+
+    @property
+    def team(self):
+        return self.key_result.team

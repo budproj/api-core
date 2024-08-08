@@ -26,3 +26,15 @@ class KeyResultCheckMark(Base):
         ForeignKey('key_result.id'))
     key_result: Mapped['KeyResult'] = relationship(
         back_populates='key_result_check_marks')
+
+    @property
+    def team_id(self):
+        return self.key_result.team_id
+
+    @property
+    def team(self):
+        return self.key_result.team
+
+    @property
+    def owner_id(self):
+        return self.assigned_user_id

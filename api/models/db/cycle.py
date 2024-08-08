@@ -30,3 +30,7 @@ class Cycle(Base):
 
     objectives: Mapped[List['Objective']] = relationship(
         back_populates='cycle')
+
+    @property
+    def owner_id(self):
+        return self.team.owner_id
