@@ -10,27 +10,28 @@ class TeamRanking:
     cycle_id: str
     cycles = []
     teams: List
+    total_teams_progress = 0
 
     SQL_TEAMS_QUERY = text("""
       SELECT query.* FROM (
-        SELECT 
-            t.name, 
-            t.id, 
-            t.parent_id, 
-            os.is_outdated, 
-            os.is_active, 
-            os.progress, 
+        SELECT
+            t.name,
+            t.id,
+            t.parent_id,
+            os.is_outdated,
+            os.is_active,
+            os.progress,
             os.previous_progress,
-            krlci.created_at AS latest_check_in_created_at, 
-            u.first_name, 
-            u.last_name, 
+            krlci.created_at AS latest_check_in_created_at,
+            u.first_name,
+            u.last_name,
             u.id AS user_id,
             ROW_NUMBER() OVER(
-                PARTITION BY t.name 
-                ORDER BY 
-                    CASE WHEN krlci.created_at IS NULL THEN 0 ELSE 1 END DESC, 
+                PARTITION BY t.name
+                ORDER BY
+                    CASE WHEN krlci.created_at IS NULL THEN 0 ELSE 1 END DESC,
                     krlci.created_at DESC
-            ) num 
+            ) num
         FROM team t
         INNER JOIN team_company tc ON t.id = tc.team_id
         LEFT JOIN key_result kr ON kr.team_id = tc.team_id
@@ -52,16 +53,16 @@ class TeamRanking:
                 os.team_id,
                 os.cycle_id
         ) os ON os.team_id = tc.team_id
-        WHERE t.parent_id IS NOT NULL 
+        WHERE t.parent_id IS NOT NULL
         AND tc.company_id = :company_id
         and os.cycle_id = :cycle_id
-    ) AS query 
-    WHERE num = 1 
+    ) AS query
+    WHERE num = 1
     ORDER BY coalesce(progress, 0) DESC
       """)
 
     SQL_CYCLES_QUERY = text("""
-      SELECT date_start, date_end, period, id 
+      SELECT date_start, date_end, period, id
         FROM "cycle" c
         WHERE c.team_id = :company_id
           AND c.active = true
@@ -77,6 +78,8 @@ class TeamRanking:
         self.team_id = team_id
         self.cycle_id = cycle_id
         self.teams = self._get_team_ranking(team_id, cycle_id)
+        self.total_teams_progress = self._calculate_total_teams_progress(
+            self.teams)
         if load_cycles:
             self.cycles = self._get_cycles(team_id)
 
@@ -108,10 +111,9 @@ class TeamRanking:
 
         return [
             {
-                'date_start': cycle[0],
-                'date_end': cycle[1],
+                'expected_progress': self._get_projected_progress(cycle[0], cycle[1])[1],
                 'period': cycle[2],
-                'id': cycle[3]
+                'id': str(cycle[3])
             }
             for cycle in cycle_result
         ]
@@ -133,3 +135,29 @@ class TeamRanking:
             return f"há {minutes} minuto{'s' if minutes > 1 else ''}"
         else:
             return "just now"
+
+    def _get_projected_progress(self, date_start: datetime, date_end: datetime, expected_goal: float = 0.7):
+        if not date_start or not date_end:
+            return 0, 0
+
+        current_date = datetime.now()
+
+        if current_date < date_start:
+            return 0, 0
+        if current_date > date_end:
+            return expected_goal, expected_goal * 100
+
+        delta_start_finish = (date_end - date_start).total_seconds()
+        delta_start_current = (current_date - date_start).total_seconds()
+
+        absolute_projected_progress = (
+            delta_start_current / delta_start_finish) * expected_goal
+        percentual_projected_progress = absolute_projected_progress * 100
+
+        return absolute_projected_progress, percentual_projected_progress
+
+    def _calculate_total_teams_progress(self, teams):
+        total_progress = sum(team['progress'] for team in teams)
+        num_teams = len(self.teams)
+        average_progress = total_progress / num_teams if num_teams > 0 else 0
+        return average_progress

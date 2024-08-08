@@ -126,15 +126,15 @@
     <div class="relative w-full h-full bg-white rounded-lg shadow-for-background-light px-8 py-5">
       <div class="flex">
         <div>
-          <p class="text-[18px] font-medium leading-normal tracking-[0.18px] text-[#364059] font-circular-std">
-            Ranking de times
+          <p class="text-[30px] font-medium leading-normal tracking-[0.295px] text-[#121415] font-circular-std">
+            Progresso dos times
           </p>
-          <p class="text-[14px] font-[450] leading-normal tracking-[0.14px] text-[#8491B0] font-circular-std">
-            Progresso geral dos objetivos no ciclo atual
+          <p class="text-[15px] font-[450] leading-normal tracking-[0.153px] text-[#99A4C2] font-circular-std">
+            Média de progresso dos OKRs em ciclos ativos
           </p>
         </div>
-        <select class="px-2 w-[100px] h-[36px] flex-shrink-0 rounded-[4px] border-2 border-[#D9E2F6] 
-          bg-white block ml-auto border-gray-200 rounded-lg text-sm outline-none
+        <select class="text-new-gray800 px-2 w-[100px] h-[36px] flex-shrink-0 rounded-[4px] border-2 border-[#D9E2F6] 
+          bg-white block ml-auto border-gray-200 rounded-md text-sm outline-none
           focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
           hx-get="/core/llm/team-ranking/{{ opts.team_id }}/children" hx-params="*" name="cycle_id"
           hx-target="#team-ranking" hx-swap="innerHTML" hx-indicator="#ranking-skeleton"
