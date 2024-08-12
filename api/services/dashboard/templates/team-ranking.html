@@ -136,7 +136,7 @@
         <select class="text-new-gray800 px-2 w-[100px] h-[36px] flex-shrink-0 rounded-[4px] border-2 border-[#D9E2F6] 
           bg-white block ml-auto border-gray-200 rounded-md text-sm outline-none
           focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-          hx-get="/core/llm/team-ranking/{{ opts.team_id }}/children" hx-params="*" name="cycle_id"
+          hx-get="{{url_for('dashboard.team_ranking_children', team_id=opts.team_id)}}" hx-params="*" name="cycle_id"
           hx-target="#team-ranking" hx-swap="innerHTML" hx-indicator="#ranking-skeleton"
           hx-disabled-elt="#team-ranking">
           {% for cycle in opts.cycles %}
