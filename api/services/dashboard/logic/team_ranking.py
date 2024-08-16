@@ -13,52 +13,79 @@ class TeamRanking:
     total_teams_progress = 0
 
     SQL_TEAMS_QUERY = text("""
-      SELECT query.* FROM (
-        SELECT
-            t.name,
-            t.id,
-            t.parent_id,
-            os.is_outdated,
-            os.is_active,
-            os.progress,
-            os.previous_progress,
-            krlci.created_at AS latest_check_in_created_at,
-            u.first_name,
-            u.last_name,
-            u.id AS user_id,
-            ROW_NUMBER() OVER(
-                PARTITION BY t.name
-                ORDER BY
-                    CASE WHEN krlci.created_at IS NULL THEN 0 ELSE 1 END DESC,
-                    krlci.created_at DESC
-            ) num
-        FROM team t
-        INNER JOIN team_company tc ON t.id = tc.team_id
-        LEFT JOIN key_result kr ON kr.team_id = tc.team_id
-        LEFT JOIN key_result_latest_check_in krlci ON krlci.key_result_id = kr.id
-        LEFT JOIN "user" u ON u.id = krlci.user_id
-        LEFT JOIN (
+      WITH RECURSIVE team_hierarchy AS (
+            -- Base case: Select the given team (id = :team_id)
+            SELECT 
+                t.id,
+                t.name,
+                t.parent_id
+            FROM 
+                team t
+            WHERE 
+                t.id = :team_id
+
+            UNION ALL
+
+            -- Recursive case: Select all child teams of the current team
+            SELECT 
+                t.id,
+                t.name,
+                t.parent_id
+            FROM 
+                team t
+            INNER JOIN 
+                team_hierarchy th ON t.parent_id = th.id
+        )
+        SELECT query.* FROM (
             SELECT
-                os.team_id,
-                os.cycle_id,
-                bool_and(os.is_outdated) AS is_outdated,
-                bool_or(os.is_active) AS is_active,
-                avg(os.progress) AS progress,
-                min(os.confidence) AS confidence,
-                avg(os.previous_progress) AS previous_progress,
-                min(os.previous_confidence) AS previous_confidence
-            FROM
-                objective_status os
-            GROUP BY
-                os.team_id,
-                os.cycle_id
-        ) os ON os.team_id = tc.team_id
-        WHERE t.parent_id IS NOT NULL
-        AND tc.company_id = :company_id
-        and os.cycle_id = :cycle_id
-    ) AS query
-    WHERE num = 1
-    ORDER BY coalesce(progress, 0) DESC
+                t.name,
+                t.id,
+                t.parent_id,
+                os.is_outdated,
+                os.is_active,
+                os.progress,
+                os.previous_progress,
+                krlci.created_at AS latest_check_in_created_at,
+                u.first_name,
+                u.last_name,
+                u.id AS user_id,
+                ROW_NUMBER() OVER(
+                    PARTITION BY t.name
+                    ORDER BY
+                        CASE WHEN krlci.created_at IS NULL THEN 0 ELSE 1 END DESC,
+                        krlci.created_at DESC
+                ) num
+            FROM 
+                team_hierarchy t -- Use the recursive CTE here
+            INNER JOIN 
+                team_company tc ON t.id = tc.team_id
+            LEFT JOIN 
+                key_result kr ON kr.team_id = tc.team_id
+            LEFT JOIN 
+                key_result_latest_check_in krlci ON krlci.key_result_id = kr.id
+            LEFT JOIN 
+                "user" u ON u.id = krlci.user_id
+            LEFT JOIN (
+                SELECT
+                    os.team_id,
+                    os.cycle_id,
+                    bool_and(os.is_outdated) AS is_outdated,
+                    bool_or(os.is_active) AS is_active,
+                    avg(os.progress) AS progress,
+                    min(os.confidence) AS confidence,
+                    avg(os.previous_progress) AS previous_progress,
+                    min(os.previous_confidence) AS previous_confidence
+                FROM
+                    objective_status os
+                GROUP BY
+                    os.team_id,
+                    os.cycle_id
+            ) os ON os.team_id = tc.team_id
+            WHERE 
+                os.cycle_id = :cycle_id
+        ) AS query
+        WHERE num = 1
+        ORDER BY coalesce(progress, 0) DESC
       """)
 
     SQL_CYCLES_QUERY = text("""
@@ -86,7 +113,7 @@ class TeamRanking:
     def _get_team_ranking(self, team_id: str, cycle_id: str):
 
         result = core_db.session.execute(
-            self.SQL_TEAMS_QUERY, {'company_id': team_id, 'cycle_id': cycle_id}).fetchall()
+            self.SQL_TEAMS_QUERY, {'team_id': team_id, 'cycle_id': cycle_id}).fetchall()
 
         formatted_result = []
         for row in result:
