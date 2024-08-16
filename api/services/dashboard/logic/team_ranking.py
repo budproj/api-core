@@ -7,7 +7,7 @@ from ast import literal_eval
 
 class TeamRanking:
     team_id: str
-    cycle_id: str
+    cycle_ids: str
     cycles = []
     teams: List
     total_teams_progress = 0
@@ -82,7 +82,7 @@ class TeamRanking:
                     os.cycle_id
             ) os ON os.team_id = tc.team_id
             WHERE 
-                os.cycle_id = :cycle_id
+                os.cycle_id IN :cycle_ids
         ) AS query
         WHERE num = 1
         ORDER BY coalesce(progress, 0) DESC
@@ -95,7 +95,7 @@ class TeamRanking:
           AND c.active = true
         """)
 
-    def __init__(self, team_id: str, cycle_id: str = None, load_cycles=True):
+    def __init__(self, team_id: str, cycle_ids: List[str] = [], load_cycles=True):
         """Initializes team_id
 
         Args:
@@ -103,17 +103,18 @@ class TeamRanking:
         """
 
         self.team_id = team_id
-        self.cycle_id = cycle_id
-        self.teams = self._get_team_ranking(team_id, cycle_id)
+        self.cycle_ids = cycle_ids
+        self.teams = self._get_team_ranking(team_id, cycle_ids)
         self.total_teams_progress = self._calculate_total_teams_progress(
             self.teams)
         if load_cycles:
             self.cycles = self._get_cycles(team_id)
 
-    def _get_team_ranking(self, team_id: str, cycle_id: str):
-
+    def _get_team_ranking(self, team_id: str, cycle_ids: List[str]):
+        if len(cycle_ids) == 0:
+            return []
         result = core_db.session.execute(
-            self.SQL_TEAMS_QUERY, {'team_id': team_id, 'cycle_id': cycle_id}).fetchall()
+            self.SQL_TEAMS_QUERY, {'team_id': team_id, 'cycle_ids': tuple(cycle_ids)}).fetchall()
 
         formatted_result = []
         for row in result:
