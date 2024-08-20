@@ -1,0 +1,81 @@
+{% set selected_cycle = opts.cycles | selectattr("id", "equalto", opts.cycle_id|string) | first %}
+
+<div class="flex items-center gap-x-3 whitespace-nowrap">
+  <div class="relative flex w-full h-4 bg-[#D9E2F6] rounded-full" role="progressbar" aria-valuenow="50"
+    aria-valuemin="0" aria-valuemax="100">
+    <div
+      class="flex flex-col justify-center rounded-full bg-[#6F6EFF] text-xs text-white text-center whitespace-nowrap transition duration-500"
+      style="width: {{(opts.total_teams_progress|round)|int}}%"></div>
+
+    <div class="absolute -top-1 -bottom-1 h-[150%] border-l-2 border-[#99A4C2] rounded-full" style="left: 50%;">
+    </div>
+  </div>
+  <div class="text-end">
+    <span
+      class="text-[36px] font-medium leading-normal tracking-[0.36px] text-right text-[#6F6EFF] font-circular-std">{{(opts.total_teams_progress|round)|int}}%</span>
+  </div>
+</div>
+{%if opts.teams|length == 0%}
+<div>Nenhum time encontrado.</div>
+{% endif %}
+{% for item in opts.teams %}
+<hr class="border-gray-400 my-2">
+<div class=" space-x-5 flex items-center">
+  <div
+    class="flex items-center justify-center w-10 h-10 bg-white border-2 border-new-gray-200 rounded-full flex-shrink-0 flex-grow-0">
+    <p class="text-2xl font-bold leading-[0.8] text-[#6F6EFF]">
+      {{ loop.index }}
+    </p>
+  </div>
+  <div class="w-full">
+    <div class="mb-2 flex justify-between items-center">
+      <p class="text-[16px] font-[450] leading-normal text-[#121415] font-circular-std">
+        {{ item.team_name }}
+      </p>
+      <p class="text-[16px] font-bold leading-normal text-right text-[#6F6EFF] font-circular-std">
+        {{ (item.progress|round)|int }}%
+      </p>
+    </div>
+    <div class="relative flex w-full h-2 bg-[#D9E2F6] rounded-full overflow-visible" role="progressbar"
+      aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">
+      <div
+        class="flex flex-col justify-center rounded-full bg-[#6F6EFF] text-xs text-white text-center whitespace-nowrap transition duration-500"
+        style="width: {{item.progress}}%">
+      </div>
+      <div class="absolute -top-1 -bottom-1 h-[200%] border-l-2 border-[#99A4C2] rounded-full" style="left: 50%;">
+      </div>
+    </div>
+    <p class="text-[12px] font-normal leading-normal tracking-[0.12px] font-circular-std mt-1 
+      {{ 'is-outdated-true' if item.is_outdated else 'is-outdated-false' }}">
+      Último check-in {{item.latest_check_in_created_at}} por {{item.user_first_name}} {{item.user_last_name}}
+    </p>
+  </div>
+  {% set progress_diff = (item.progress - item.previous_progress)|round|int %}
+
+  {% if progress_diff > 0 %}
+  <div class="rounded-[6px] border-[2.362px] border-white bg-[#EAFAF4] flex p-1 items-center space-x-1">
+    <img class="h-full" src="{{ url_for('dashboard.static', filename='icons/delta_increase.svg') }}"
+      alt="This the delta increased icon" />
+    <p class="text-[12px] font-medium leading-normal text-[#24CB8D] font-circular-std">
+      +{{ progress_diff }}%
+    </p>
+  </div>
+  {% elif progress_diff < 0 %} <div
+    class="rounded-[6px] border-[2.362px] border-white bg-[#FFF0F1] flex p-1 items-center space-x-1">
+    <img class="h-full" src="{{ url_for('dashboard.static', filename='icons/delta_decrease.svg') }}"
+      alt="This the delta decreased icon" />
+    <p class="text-[12px] font-medium leading-normal text-[#FF616A] font-circular-std">
+      -{{ progress_diff }}%
+    </p>
+</div>
+{% else %}
+<div class="rounded-[6px] border-[2.362px] border-white bg-[#EEF2FC] flex p-1 items-center space-x-1">
+  <img class="h-full" src="{{ url_for('dashboard.static', filename='icons/delta_normal.svg') }}"
+    alt="This the delta normal icon" />
+  <p class="text-[12px] font-medium leading-normal text-[#A2B3CE] font-circular-std">
+    {{ progress_diff }}%
+  </p>
+</div>
+{% endif %}
+</div>
+{% endfor %}

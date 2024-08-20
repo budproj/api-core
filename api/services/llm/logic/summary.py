@@ -130,8 +130,7 @@ class LlmSummary:
         sorted_comments = sorted(
             okr.key_result_comments, key=lambda x: x.created_at, reverse=True)
         formatted_comments = [
-            f'{comments.user.first_name} em {
-                comments.created_at}: "{comments.text}"'
+            f'{comments.user.first_name} em { comments.created_at}: "{comments.text}"'
             for comments in sorted_comments
         ]
 

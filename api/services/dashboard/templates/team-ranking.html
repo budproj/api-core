@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script type="module">
+    import preline from 'https://cdn.jsdelivr.net/npm/preline@2.4.1/+esm'
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Htmx -->
+  <script src="https://unpkg.com/htmx.org@2.0.0"
+    integrity="sha384-wS5l5IKJBvK6sPTKa2WZ1js3d947pvWXbPJ1OmWfEuxLgeHcEbjUUA5i9V5ZkpCw"
+    crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+  <style>
+    .bg-new-gray50 {
+      background-color: #F8F9FD;
+    }
+
+    .bg-new-gray100 {
+      background-color: #F2F6FE;
+    }
+
+    .bg-new-gray200 {
+      background-color: #EEF2FC;
+    }
+
+    .bg-new-gray300 {
+      background-color: #E8EEFC;
+    }
+
+    .bg-new-gray400 {
+      background-color: #D9E2F6;
+    }
+
+    .bg-new-gray500 {
+      background-color: #B5C0DB;
+    }
+
+    .bg-new-gray600 {
+      background-color: #99A4C2;
+    }
+
+    .bg-new-gray700 {
+      background-color: #8491B0;
+    }
+
+    .bg-new-gray800 {
+      background-color: #525F7F;
+    }
+
+    .bg-new-gray900 {
+      background-color: #364059;
+    }
+
+    .text-new-gray50 {
+      color: #F8F9FD;
+    }
+
+    .text-new-gray100 {
+      color: #F2F6FE;
+    }
+
+    .text-new-gray200 {
+      color: #EEF2FC;
+    }
+
+    .text-new-gray300 {
+      color: #E8EEFC;
+    }
+
+    .text-new-gray400 {
+      color: #D9E2F6;
+    }
+
+    .text-new-gray500 {
+      color: #B5C0DB;
+    }
+
+    .text-new-gray600 {
+      color: #99A4C2;
+    }
+
+    .text-new-gray700 {
+      color: #8491B0;
+    }
+
+    .text-new-gray800 {
+      color: #525F7F;
+    }
+
+    .text-new-gray900 {
+      color: #364059;
+    }
+
+    .is-outdated-true {
+      color: #FF616A;
+    }
+
+    .is-outdated-false {
+      color: #99A4C2;
+    }
+
+    .htmx-indicator {
+      display: none;
+    }
+
+    .htmx-request .htmx-indicator {
+      display: block;
+    }
+
+    .htmx-request.htmx-indicator {
+      display: block;
+    }
+
+    #team-ranking[disabled] {
+      display: none;
+    }
+  </style>
+  <div class="relative w-full h-full bg-new-gray50">
+    <p class="text-new-gray800 font-medium text-lg mb-3">
+      Visão geral dos times
+    </p>
+    <div class="relative w-full h-full bg-white rounded-lg shadow-for-background-light px-8 py-5">
+      <div class="flex">
+        <div>
+          <p class="text-[30px] font-medium leading-normal tracking-[0.295px] text-[#121415] font-circular-std">
+            Progresso dos times
+          </p>
+          <p class="text-[15px] font-[450] leading-normal tracking-[0.153px] text-[#99A4C2] font-circular-std">
+            Média de progresso dos OKRs em ciclos ativos
+          </p>
+        </div>
+        <div class="ml-auto">
+          <select multiple data-hs-select='{
+            "placeholder": "Select multiple options...",
+            "toggleTag": "<button type=\"button\" aria-expanded=\"false\"></button>",
+            "toggleClasses": "hs-select-disabled:pointer-events-none hs-select-disabled:opacity-50 relative py-3 ps-4 pe-9 flex gap-x-2 text-nowrap w-full cursor-pointer bg-white border border-gray-200 rounded-lg text-start text-sm focus:outline-none focus:ring-2 focus:ring-blue-500",
+            "dropdownClasses": "mt-2 z-50 w-full max-h-72 p-1 space-y-0.5 bg-white border border-gray-200 rounded-lg overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300",
+            "optionClasses": "py-2 px-4 w-full text-sm text-gray-800 cursor-pointer hover:bg-gray-100 rounded-lg focus:outline-none focus:bg-gray-100",
+            "optionTemplate": "<div class=\"flex justify-between items-center w-full\"><span data-title></span><span class=\"hidden hs-selected:block\"><svg class=\"shrink-0 size-3.5 text-blue-600 \" xmlns=\"http:.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg></span></div>",
+            "extraMarkup": "<div class=\"absolute top-1/2 end-3 -translate-y-1/2\"><svg class=\"shrink-0 size-3.5 text-gray-500 \" xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m7 15 5 5 5-5\"/><path d=\"m7 9 5-5 5 5\"/></svg></div>"
+          }' class="hidden" hx-get="{{url_for('dashboard.team_ranking_children', team_id=opts.team_id)}}"
+            hx-target="#team-ranking" hx-swap="innerHTML" hx-indicator="#ranking-skeleton" name="cycle_ids">
+            {% for cycle in opts.cycles %}
+            <option value="{{ cycle.id }}" {% if cycle.id in opts.cycle_ids %}selected{% endif %}>{{ cycle.period }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+      </div>
+      <div id="team-ranking">
+        {% include 'team-ranking-content.html' %}
+      </div>
+      <div id="ranking-skeleton" class="flex animate-pulse htmx-indicator">
+        <div class="shrink-0 flex items-center space-x-3 mb-5">
+          <span class="size-12 block bg-gray-200 rounded-full"></span>
+          <p class="h-4 bg-gray-200 rounded-full w-full"></p>
+        </div>
+        <div class="shrink-0 flex items-center space-x-3 mb-5">
+          <span class="size-12 block bg-gray-200 rounded-full"></span>
+          <p class="h-4 bg-gray-200 rounded-full w-full"></p>
+        </div>
+        <div class="shrink-0 flex items-center space-x-3 mb-5">
+          <span class="size-12 block bg-gray-200 rounded-full"></span>
+          <p class="h-4 bg-gray-200 rounded-full w-full"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Select -->
+
+  <!-- End Select -->
+</body>

@@ -1,8 +1,8 @@
+from flask import render_template
+from . import blueprint
 from api.services.llm.logic.index import LlmIndex
 from api.services.llm.logic.summary import LlmSummary
 from api.utils.openai import OpenAI
-from . import blueprint
-from flask import render_template
 
 
 @blueprint.route('/<okr_id>')
